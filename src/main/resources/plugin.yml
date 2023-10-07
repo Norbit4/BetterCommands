@@ -1,0 +1,4 @@
+name: BetterCommands
+version: '${version}'
+main: pl.norbit.bettercommands.BetterCommands
+api-version: '1.19'

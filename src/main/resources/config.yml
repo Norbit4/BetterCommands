@@ -1,0 +1,37 @@
+blocked:
+  commands:
+    - 'pl'
+    - 'plugins'
+    - 'help'
+    - '?'
+  perm: 'bc.*'
+  message:
+    - '&cNie mozesz użyć tej komendy!'
+
+commands:
+  aukcja:
+    type: 'replace'
+    cmd : 'ca'
+  dzienne:
+    type: 'replace'
+    cmd : 'daily'
+  rm:
+    type: 'replace'
+    cmd : 'cf'
+  sklep:
+    type: 'replace'
+    cmd : 'shop'
+  pomoc:
+    type: 'normal'
+    message:
+      - '&8&m[----------------&8  [ &d&lPomoc &8] &m----------------]&8'
+      - ''
+      - '&7/&dplot &8- &7Działki'
+      - '&7/&drm &8- &7Rzut monetą.'
+      - '&7/&daukcje &8- &7Giełda serwerowa.'
+      - "&7/&dsklep &8- &7Sklep serwera."
+      - "&7/&dwalka <nick> &8- &7Wyzwij gracza na pojedynek."
+      - "&7/&ddzienne &8- &7Dzienne nagrody."
+      - "&7/&dwymiana <nick> &8- &7Wymień się przedmiotami z graczem."
+      - ''
+      - '&8&m[------------------------------------------]&8'
