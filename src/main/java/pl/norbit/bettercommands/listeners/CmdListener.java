@@ -10,7 +10,6 @@ public class CmdListener implements Listener {
 
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent e) {
-
         String[] cmdArray = e.getMessage().split(" ");
 
         String cmd = cmdArray[0].replace("/", "");

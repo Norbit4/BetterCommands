@@ -1,5 +1,5 @@
 package pl.norbit.bettercommands.model;
 
 public enum CommandType {
-    NORMAL, REPLACE
+    TEXT, REPLACE, BROADCAST, PLAYER_COMMAND, SERVER_COMMAND
 }

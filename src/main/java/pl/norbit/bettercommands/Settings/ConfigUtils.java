@@ -1,6 +1,7 @@
 package pl.norbit.bettercommands.Settings;
 
 import org.bukkit.configuration.ConfigurationSection;
+import pl.norbit.bettercommands.model.CommandAction;
 import pl.norbit.bettercommands.model.CommandType;
 import pl.norbit.bettercommands.model.ExecuteCommand;
 
@@ -18,19 +19,53 @@ public class ConfigUtils {
 
             if(cmdSec == null) return;
 
-            var type = cmdSec.getString("type");
+            var executeCommand = new ExecuteCommand(name);
 
-            if(type == null) return;
+            var perm = cmdSec.getString("perm");
+            var permMessage = cmdSec.getString("perm-message");
 
-            var commandType = CommandType.valueOf(type.toUpperCase());
+            executeCommand.setPerm(perm);
+            executeCommand.setPermMessage(permMessage);
 
-            var executeCommand = new ExecuteCommand(name, commandType);
+            var actions = cmdSec.getConfigurationSection("actions");
 
-            if(commandType == CommandType.REPLACE) executeCommand.setUsageCommand(cmdSec.getString("cmd"));
-            else if(commandType == CommandType.NORMAL) executeCommand.setMessage(cmdSec.getStringList("message"));
+            if(actions == null) return;
+
+            executeCommand.setActions(getActions(actions));
 
             commands.add(executeCommand);
         });
         return commands;
+    }
+
+    private static List<CommandAction> getActions(ConfigurationSection sec){
+
+        List<CommandAction> actions = new ArrayList<>();
+
+        sec.getKeys(false).forEach(name -> {
+            var actionSec = sec.getConfigurationSection(name);
+
+            if(actionSec == null) return;
+
+            var type = actionSec.getString("type");
+
+            if(type == null) return;
+
+            CommandType commandType;
+            try {
+                commandType = CommandType.valueOf(type.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return;
+            }
+
+            var action = new CommandAction();
+
+            action.setType(commandType);
+            action.setAction(actionSec.getStringList("action"));
+
+            actions.add(action);
+        });
+
+        return actions;
     }
 }

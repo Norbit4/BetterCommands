@@ -1,5 +1,6 @@
 package pl.norbit.bettercommands.Settings;
 
+import org.bukkit.command.CommandSender;
 import pl.norbit.bettercommands.BetterCommands;
 import pl.norbit.bettercommands.model.ExecuteCommand;
 
@@ -8,14 +9,14 @@ import java.util.List;
 public class Config {
 
     public static List<String> BLOCKED_COMMANDS, BLOCKED_MSG;
-    public static String BLOCKED_PERM;
+    public static String BLOCKED_PERM, PERM_MESSAGE;
+    public static boolean PAPI_ENABLE;
 
-    public static void load() {
+    public static void load(boolean reload, CommandSender sender){
         var instance = BetterCommands.getInstance();
 
-//        var config = instance.getConfig();
-
-        instance.saveDefaultConfig();
+        if(!reload) instance.saveDefaultConfig();
+        else instance.reloadConfig();
 
         var config = instance.getConfig();
 
@@ -26,7 +27,8 @@ public class Config {
 
         List<ExecuteCommand> commands = ConfigUtils.getCommands(commandsSection);
 
-        commands.forEach(ExecuteCommand::register);
+        if(reload) ExecuteCommand.updateCommands(commands, sender);
+        else commands.forEach(ExecuteCommand::register);
 
         if(blockedSection == null) return;
 
