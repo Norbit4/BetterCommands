@@ -1,6 +1,5 @@
 package pl.norbit.bettercommands;
 
-import org.bukkit.Server;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.norbit.bettercommands.Settings.Config;
 import pl.norbit.bettercommands.commands.ReloadCommand;

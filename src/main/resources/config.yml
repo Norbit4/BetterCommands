@@ -13,8 +13,9 @@
 
 # github: https://github.com/Norbit4
 # website: https://n0rbit.pl
+# docs: https://docs.n0rbit.pl/free-resource/bettercommands
 
-# If you like the plugin, support me with a positive opinion on spigot.org, thanks! <3
+# If you like the plugin, support me with a positive opinion <3
 
 #---------------------------------------#
 #                [Help]                 #
@@ -65,8 +66,7 @@ blocked:
     - 'version'
     - '?'
   perm: 'bc.*' # <- permission to use blocked commands
-  message:
-    - '&cYou cannot use this command!' # <- default message when player don't have permission
+  message: '&cYou cannot use this command!' # <- default message when player don't have permission
 
 commands:
   core: # <- command name (without /)

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Config {
 
-    public static List<String> BLOCKED_COMMANDS, BLOCKED_MSG;
+    public static List<String> BLOCKED_COMMANDS;
     public static String BLOCKED_PERM, PERM_MESSAGE;
     public static boolean PAPI_ENABLE;
 
@@ -34,6 +34,6 @@ public class Config {
 
         BLOCKED_COMMANDS = blockedSection.getStringList("commands");
         BLOCKED_PERM = blockedSection.getString("perm");
-        BLOCKED_MSG = blockedSection.getStringList("message");
+        PERM_MESSAGE = blockedSection.getString("message");
     }
 }

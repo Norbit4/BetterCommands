@@ -4,7 +4,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import pl.norbit.bettercommands.Settings.Config;
-import pl.norbit.bettercommands.utils.ChatUtils;
+import pl.norbit.bettercommands.utils.MessageUtils;
+import pl.norbit.bettercommands.utils.PermissionUtils;
 
 public class CmdListener implements Listener {
 
@@ -16,8 +17,10 @@ public class CmdListener implements Listener {
 
         if(!Config.BLOCKED_COMMANDS.contains(cmd)) return;
 
+        if(PermissionUtils.hasPermission(Config.BLOCKED_PERM, e.getPlayer())) return;
+
         e.setCancelled(true);
 
-        Config.BLOCKED_MSG.forEach(msg -> e.getPlayer().sendMessage(ChatUtils.format(msg)));
+        MessageUtils.toSender(e.getPlayer(), Config.PERM_MESSAGE);
     }
 }

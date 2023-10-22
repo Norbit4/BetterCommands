@@ -8,6 +8,8 @@ public class PermissionUtils {
 
         if(permission == null || permission.isEmpty()) return true;
 
+        if(sender.isOp()) return true;
+
         return sender.hasPermission(permission);
     }
 }
