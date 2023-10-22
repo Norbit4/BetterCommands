@@ -1,13 +1,14 @@
 <div align="center">
 
   <a href="https://github.com/Norbit4/TreeCuter/" target="_blank" rel="noreferrer"> 
-  <img src="https://github.com/Norbit4/BetterCommands/assets/46154743/056cdb90-cb02-4aae-80ba-cbc764d3a1a0" width=950" alt="logo"/></a>
+  <img src="https://github.com/Norbit4/BetterCommands/assets/46154743/200fbfa2-849c-453a-be54-0593cd22e1b4" width=950" alt="logo"/></a>
 
   [![Spigot](https://img.shields.io/badge/Download-Spigot-gold.svg)](https://www.spigotmc.org/resources/%E2%9C%A8bettercommands%E2%9C%A8-easily-create-commands-%E2%9C%85.113189/) 
   [![builtbybit](https://img.shields.io/badge/Download-BuiltByBit-blue.svg)](https://builtbybit.com/resources/bettercommands-easily-create-commands.33345/)                                                                                                                   
   [![License: GPL v3](https://img.shields.io/badge/license-GPLv3-orange.svg)](https://github.com/Norbit4/TreeCuter/blob/master/LICENSE)                                                                                                                          
                                                                          
 </div> 
+
                                                                                                                                                                                                                                       
 
 #  
