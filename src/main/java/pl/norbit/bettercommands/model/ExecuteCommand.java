@@ -6,15 +6,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.jetbrains.annotations.NotNull;
 import pl.norbit.bettercommands.BetterCommands;
-import pl.norbit.bettercommands.Settings.Config;
+import pl.norbit.bettercommands.settings.Config;
 import pl.norbit.bettercommands.placeholders.PlaceholderService;
 import pl.norbit.bettercommands.utils.MessageUtils;
 import pl.norbit.bettercommands.utils.PermissionUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
@@ -25,34 +22,65 @@ public class ExecuteCommand extends BukkitCommand {
 
     private String cmdName;
     private List<CommandAction> actions;
-    private String perm, permMessage;
+    private String perm;
+    private String permMessage;
+
+    private boolean completer;
+
+    private Map<String, List<CommandAction>> subCommands;
 
     public ExecuteCommand(@NotNull String name) {
         super(name);
         this.actions = new ArrayList<>();
         this.cmdName = name;
+        this.subCommands = new HashMap<>();
+    }
+
+    public void addSubCommand(String subCommand, List<CommandAction> actions){
+        this.subCommands.put(subCommand, actions);
     }
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
-
         if(!PermissionUtils.hasPermission(perm, sender)){
             if(permMessage != null && !permMessage.isEmpty()) MessageUtils.toSender(sender, permMessage);
             else MessageUtils.toSender(sender, Config.PERM_MESSAGE);
             return true;
         }
-        actions.forEach(action -> executeAction(action, sender, args));
 
+        //execute default actions
+        if(args.length < 1){
+            actions.forEach(action -> executeAction(action, sender, args));
+            return true;
+        }
+
+        String arg = args[0];
+        //execute sub commands
+        List<CommandAction> commandActions = subCommands.get(arg);
+        if(commandActions == null){
+            actions.forEach(action -> executeAction(action, sender, args));
+            return true;
+        }
+
+        commandActions.forEach(action -> executeAction(action, sender, args));
         return true;
     }
+
+    @Override
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        if(!completer){
+            return Collections.emptyList();
+        }
+
+        return new ArrayList<>(subCommands.keySet());
+    }
+
     public void register(){
         server.getCommandMap().register("", this);
         COMMANDS.put(cmdName, this);
     }
 
-
     public static void updateCommands(List<ExecuteCommand> updatedCommands, CommandSender sender){
-
         boolean reloadWarn = false;
         MessageUtils.toSender(sender, "");
 
@@ -70,7 +98,9 @@ public class ExecuteCommand extends BukkitCommand {
             }
 
             executeCommand.setPerm(cmd.getPerm());
+            executeCommand.setCompleter(cmd.isCompleter());
             executeCommand.setPermMessage(cmd.getPermMessage());
+            executeCommand.setSubCommands(cmd.getSubCommands());
 
             executeCommand.setActions(cmd.getActions());
         }

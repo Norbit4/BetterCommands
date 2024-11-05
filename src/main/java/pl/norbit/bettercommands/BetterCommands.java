@@ -1,7 +1,10 @@
 package pl.norbit.bettercommands;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.plugin.java.JavaPlugin;
-import pl.norbit.bettercommands.Settings.Config;
+import pl.norbit.bettercommands.settings.Config;
 import pl.norbit.bettercommands.commands.ReloadCommand;
 import pl.norbit.bettercommands.listeners.CmdListener;
 
@@ -9,12 +12,13 @@ import java.util.logging.Logger;
 
 public final class BetterCommands extends JavaPlugin {
 
+    @Getter
+    @Setter(AccessLevel.PRIVATE)
     private static BetterCommands instance;
 
     @Override
     public void onEnable() {
-        instance = this;
-
+        setInstance(this);
         Config.load(false, null);
 
         checkPapi();
@@ -45,7 +49,4 @@ public final class BetterCommands extends JavaPlugin {
         // Plugin shutdown logic
     }
 
-    public static BetterCommands getInstance() {
-        return instance;
-    }
 }

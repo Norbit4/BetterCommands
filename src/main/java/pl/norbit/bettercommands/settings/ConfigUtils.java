@@ -1,4 +1,4 @@
-package pl.norbit.bettercommands.Settings;
+package pl.norbit.bettercommands.settings;
 
 import org.bukkit.configuration.ConfigurationSection;
 import pl.norbit.bettercommands.model.CommandAction;
@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigUtils {
+
+    private ConfigUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static List<ExecuteCommand> getCommands(ConfigurationSection sec) {
 
@@ -21,17 +25,40 @@ public class ConfigUtils {
 
             var executeCommand = new ExecuteCommand(name);
 
+            var completer = cmdSec.getBoolean("completer");
             var perm = cmdSec.getString("perm");
             var permMessage = cmdSec.getString("perm-message");
 
             executeCommand.setPerm(perm);
+            executeCommand.setCompleter(completer);
             executeCommand.setPermMessage(permMessage);
 
             var actions = cmdSec.getConfigurationSection("actions");
 
-            if(actions == null) return;
+            //sub commands
+            ConfigurationSection configurationSection = cmdSec.getConfigurationSection("sub-commands");
 
-            executeCommand.setActions(getActions(actions));
+            if(configurationSection != null){
+                configurationSection.getKeys(false).forEach(subCommand -> {
+                    var subCommandSec = cmdSec.getConfigurationSection("sub-commands." + subCommand);
+                    if(subCommandSec == null){
+                        System.out.println("Sub command section is null");
+                        return;
+                    }
+
+                    var subActions = subCommandSec.getConfigurationSection("actions");
+                    if(subActions == null){
+                        System.out.println("Sub actions section is null");
+                        return;
+                    }
+                    executeCommand.addSubCommand(subCommand, getActions(subActions));
+                });
+            }
+
+            //default actions
+            if(actions != null){
+                executeCommand.setActions(getActions(actions));
+            }
 
             commands.add(executeCommand);
         });
