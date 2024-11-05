@@ -49,7 +49,12 @@
 #   - player_command:
 #      execute command as player
 
-# 3.Placeholders:
+# 3.Sub-commands:
+#   - You can create sub-commands for main command
+#   - To use sub-commands, use /main-command sub-command
+#   - enable/disable tab completer for sub-commands
+
+# 4.Placeholders:
 #   - {PLAYER} - player name who use command
 
 #  For other placeholders, use PlaceholderAPI plugin:
@@ -84,6 +89,7 @@ commands:
   info:
     perm: 'info.admin' # <- permission to use this command
     perm-message: '&cYou cannot use this command!' # <- message when player don't have permission
+    completer: true
     #multi actions
     actions:
       action-1:
@@ -105,6 +111,26 @@ commands:
         type: 'server_command' # <- execute command as console
         action:
           - 'give {PLAYER} minecraft:diamond 1' # (without /)
+  sop:
+    completer: true # <- enable tab completer
+    actions:
+      action-1:
+        type: 'text'
+        action:
+          - '&aUsage: /sop <op/deop>'
+    sub-commands: # <- sub-commands
+      op: # <- sub-command name, use /sop op
+        actions:
+          action-1:
+            type: 'server_command'
+            action:
+              - 'op {PLAYER}'
+      deop: # <- sub-command name, use /sop deop
+        actions:
+          action-1:
+            type: 'server_command'
+            action:
+              - 'deop {PLAYER}'
 ```                                                                                                                    
 ## Links
  [![spigot](https://img.shields.io/badge/Download-Spigot-gold.svg)](https://www.spigotmc.org/resources/%E2%9C%A8bettercommands%E2%9C%A8-easily-create-commands-%E2%9C%85.113189/)    
