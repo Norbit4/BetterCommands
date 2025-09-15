@@ -1,5 +1,6 @@
 package pl.norbit.bettercommands.settings;
 
+import lombok.Getter;
 import org.bukkit.command.CommandSender;
 import pl.norbit.bettercommands.BetterCommands;
 import pl.norbit.bettercommands.model.ExecuteCommand;
@@ -11,6 +12,14 @@ public class Config {
     public static List<String> BLOCKED_COMMANDS;
     public static String BLOCKED_PERM, PERM_MESSAGE;
     public static boolean PAPI_ENABLE;
+
+
+    @Getter
+    private static String defaultPermissionMessage;
+    @Getter
+    private static String defaultCooldownMessage;
+    @Getter
+    private static String defaultArgsMessage;
 
     private Config() {
         throw new IllegalStateException("Utility class");
@@ -30,6 +39,10 @@ public class Config {
         if(commandsSection == null){
             return;
         }
+
+        defaultArgsMessage = config.getString("default-message.arg");
+        defaultCooldownMessage = config.getString("default-message.cooldown");
+        defaultPermissionMessage = config.getString("default-message.permission");
 
         List<ExecuteCommand> commands = ConfigUtils.getCommands(commandsSection);
 

@@ -27,9 +27,16 @@ public class ConfigUtils {
 
             var completer = cmdSec.getBoolean("completer");
             var perm = cmdSec.getString("perm");
-            var permMessage = cmdSec.getString("perm-message");
+            var permMessage = cmdSec.getString("perm-message", Config.getDefaultPermissionMessage());
+
+            String cooldownMessage = cmdSec.getString("cooldown-message", Config.getDefaultCooldownMessage());
+            String argsMessage = cmdSec.getString("arg-message", Config.getDefaultArgsMessage());
+            int minArgs = cmdSec.getInt("min-args", 0);
 
             executeCommand.setPerm(perm);
+            executeCommand.setCooldownMessage(cooldownMessage);
+            executeCommand.setArgsMessage(argsMessage);
+            executeCommand.setMinArgs(minArgs);
             executeCommand.setCompleter(completer);
             executeCommand.setPermMessage(permMessage);
 

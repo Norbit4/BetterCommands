@@ -14,7 +14,9 @@ public class PlaceholderService {
             return PlaceholderUtil.format(message, null);
         }
 
-        if(Config.PAPI_ENABLE) message = PlaceholderUtil.format(message, p);
+        if(Config.PAPI_ENABLE){
+            message = PlaceholderUtil.format(message, p);
+        }
 
         return message.replace("{PLAYER}", p.getName());
     }

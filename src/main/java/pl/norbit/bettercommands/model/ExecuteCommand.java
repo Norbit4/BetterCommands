@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import pl.norbit.bettercommands.BetterCommands;
 import pl.norbit.bettercommands.settings.Config;
 import pl.norbit.bettercommands.placeholders.PlaceholderService;
+import pl.norbit.bettercommands.utils.ChatUtils;
 import pl.norbit.bettercommands.utils.MessageUtils;
 import pl.norbit.bettercommands.utils.PermissionUtils;
 
@@ -24,6 +25,10 @@ public class ExecuteCommand extends BukkitCommand {
     private List<CommandAction> actions;
     private String perm;
     private String permMessage;
+    private String cooldownMessage;
+
+    private String argsMessage;
+    private int minArgs;
 
     private boolean completer;
 
@@ -45,6 +50,11 @@ public class ExecuteCommand extends BukkitCommand {
         if(!PermissionUtils.hasPermission(perm, sender)){
             if(permMessage != null && !permMessage.isEmpty()) MessageUtils.toSender(sender, permMessage);
             else MessageUtils.toSender(sender, Config.PERM_MESSAGE);
+            return true;
+        }
+
+        if(args.length < minArgs){
+            MessageUtils.toSender(sender, argsMessage);
             return true;
         }
 
@@ -128,10 +138,18 @@ public class ExecuteCommand extends BukkitCommand {
 
                 server.dispatchCommand(sender, usageCommand.toString());
             }
-            case TEXT -> actions.forEach(m -> MessageUtils.toSender(sender, m));
-            case PLAYER_COMMAND -> actions.forEach(c -> server.dispatchCommand(sender, PlaceholderService.replace(c, sender)));
-            case SERVER_COMMAND -> actions.forEach(c -> server.dispatchCommand(server.getConsoleSender(), PlaceholderService.replace(c, sender)));
-            case BROADCAST -> actions.forEach(m -> MessageUtils.toAll(sender, m));
+            case TEXT -> actions.forEach(m -> MessageUtils.toSender(sender, m, args));
+            case PLAYER_COMMAND ->
+                actions.forEach(c -> {
+                    String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
+                    server.dispatchCommand(sender, command);
+                });
+            case SERVER_COMMAND ->
+                actions.forEach(c -> {
+                    String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
+                    server.dispatchCommand(server.getConsoleSender(), command);
+                });
+            case BROADCAST -> actions.forEach(m -> MessageUtils.toAll(sender, m, args));
         }
     }
 }

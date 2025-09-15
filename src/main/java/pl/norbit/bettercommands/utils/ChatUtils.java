@@ -6,6 +6,21 @@ public class ChatUtils {
 
     static public final String CODES = "((?<=%1$s)|(?=%1$s))";
 
+    private ChatUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static String format(String input, String... args){
+        return format(replace(input, args));
+    }
+
+    public static String replace(String input, String[] args){
+        for (int i = 0; i < args.length; i++) {
+            input = input.replace("{" + i + "}", args[i]);
+        }
+        return input;
+    }
+
     public static String format(String text){
 
         String[] texts = text.split(String.format(CODES, "&"));

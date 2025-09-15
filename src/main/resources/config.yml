@@ -61,6 +61,11 @@
 #               [Config]                #
 #---------------------------------------#
 
+default-message:
+  permission: '&cYou do not have permission to use this command!'
+  cooldown: '&cYou need to wait {0} seconds to use this command again!'
+  arg: '&cYou need to provide more arguments!'
+
 blocked:
   commands:
     - 'pl'
@@ -95,11 +100,14 @@ commands:
           - '&aSended from {PLAYER}!'
           - '&aHI ALL!'
   diamonds:
+    cooldown: 5 # <- cooldown in seconds
+    min-args: 1
+    arg-message: '&cUsage: /diamonds <amount>'
     actions:
       action-1:
         type: 'text'
         action:
-          - '&#DBC7FFDiamonds!'
+          - '&#DBC7FFDiamonds! {0}'
       action-2:
         type: 'server_command' # <- execute command as console
         action:
