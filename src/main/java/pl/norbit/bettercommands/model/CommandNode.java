@@ -13,6 +13,7 @@ public class CommandNode {
     private String argumentId;
     private boolean argumentNode;
     private boolean tabPlayers;
+    private boolean greedyArgument;
 
     private Map<String, CommandNode> subCommands = new HashMap<>();
     private List<CommandAction> actions = new ArrayList<>();

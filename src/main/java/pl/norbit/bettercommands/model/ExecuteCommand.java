@@ -58,8 +58,11 @@ public class ExecuteCommand extends BukkitCommand {
         }
 
         if (cooldown > 0 && cooldownService.isOnCooldown(sender, cmdName)) {
-            long remaining =
-                    cooldownService.getRemainingSeconds(sender, cmdName);
+            long remaining = cooldownService.getRemainingSeconds(sender, cmdName);
+
+            if (remaining <= 0) {
+                remaining = 1;
+            }
 
             MessageUtils.toSender(
                     sender,
@@ -78,13 +81,35 @@ public class ExecuteCommand extends BukkitCommand {
         CommandNode currentNode = null;
         Map<String, CommandNode> current = subCommands;
 
-        for(String arg : args){
+        String[] parsedArgs = args;
+
+        for(int i = 0; i < args.length; i++) {
+            String arg = args[i];
+
             CommandNode next = current.get(arg.toLowerCase());
 
-            if(next == null){
+            if(next == null) {
                 next = findArgumentNode(current);
 
-                if(next == null){
+                if(next == null) {
+                    break;
+                }
+
+                if(next.isGreedyArgument()) {
+                    List<String> newArgs = new ArrayList<>(
+                            Arrays.asList(args).subList(0, i)
+                    );
+
+                    String remaining = String.join(
+                            " ",
+                            Arrays.copyOfRange(args, i, args.length)
+                    );
+
+                    newArgs.add(remaining);
+
+                    parsedArgs = newArgs.toArray(new String[0]);
+
+                    currentNode = next;
                     break;
                 }
             }
@@ -93,18 +118,18 @@ public class ExecuteCommand extends BukkitCommand {
             current = next.getSubCommands();
         }
 
-        if(currentNode != null &&
-                !currentNode.getActions().isEmpty()){
-
-            currentNode.getActions()
-                    .forEach(action ->
-                            executeAction(action, sender, args));
+        if(currentNode != null && !currentNode.getActions().isEmpty()){
+            for (CommandAction action : currentNode.getActions()) {
+                executeAction(action, sender, parsedArgs);
+            }
             applyCooldown(sender);
             return true;
         }
 
         //fallback to root actions
-        actions.forEach(action -> executeAction(action, sender, args));
+        for (CommandAction action : actions) {
+            executeAction(action, sender, parsedArgs);
+        }
 
         applyCooldown(sender);
         return true;

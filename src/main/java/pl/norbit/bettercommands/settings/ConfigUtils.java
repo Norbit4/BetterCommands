@@ -22,7 +22,10 @@ public class ConfigUtils {
         CommandNode currentNode = null;
 
         for (String part : parts) {
-            boolean argument = part.startsWith("<") && part.endsWith(">");
+            boolean argument = part.startsWith("<") && part.endsWith(">")
+                    || (part.startsWith("[") && part.endsWith("]"));
+
+            boolean greedy = part.startsWith("[") && part.endsWith("]");
 
             String key = argument
                     ? "__arg__" + part.substring(1, part.length() - 1)
@@ -38,6 +41,7 @@ public class ConfigUtils {
 
                     next.setArgumentNode(true);
                     next.setArgumentId(argName);
+                    next.setGreedyArgument(greedy);
 
                     if (argName.equalsIgnoreCase("player")
                             || argName.equalsIgnoreCase("target")
