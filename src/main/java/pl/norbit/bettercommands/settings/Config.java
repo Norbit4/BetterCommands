@@ -1,19 +1,19 @@
 package pl.norbit.bettercommands.settings;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import pl.norbit.bettercommands.BetterCommands;
 import pl.norbit.bettercommands.model.ExecuteCommand;
 
 import java.util.List;
 
 public class Config {
-
-    public static List<String> BLOCKED_COMMANDS;
-    public static String BLOCKED_PERM, PERM_MESSAGE;
-    public static boolean PAPI_ENABLE;
-
-
+    @Getter
+    @Setter
+    private static boolean papiEnable;
     @Getter
     private static String defaultPermissionMessage;
     @Getter
@@ -21,9 +21,7 @@ public class Config {
     @Getter
     private static String defaultArgsMessage;
 
-    private Config() {
-        throw new IllegalStateException("Utility class");
-    }
+    private Config() {}
 
     public static void load(boolean reload, CommandSender sender){
         var instance = BetterCommands.getInstance();
@@ -31,10 +29,9 @@ public class Config {
         if(!reload) instance.saveDefaultConfig();
         else instance.reloadConfig();
 
-        var config = instance.getConfig();
+        FileConfiguration config = instance.getConfig();
 
-        var commandsSection = config.getConfigurationSection("commands");
-        var blockedSection = config.getConfigurationSection("blocked");
+        ConfigurationSection commandsSection = config.getConfigurationSection("commands");
 
         if(commandsSection == null){
             return;
@@ -52,13 +49,5 @@ public class Config {
         else{
             commands.forEach(ExecuteCommand::register);
         }
-
-        if(blockedSection == null){
-            return;
-        }
-
-        BLOCKED_COMMANDS = blockedSection.getStringList("commands");
-        BLOCKED_PERM = blockedSection.getString("perm");
-        PERM_MESSAGE = blockedSection.getString("message");
     }
 }

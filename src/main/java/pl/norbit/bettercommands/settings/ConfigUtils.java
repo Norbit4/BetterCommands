@@ -1,70 +1,110 @@
 package pl.norbit.bettercommands.settings;
 
 import org.bukkit.configuration.ConfigurationSection;
-import pl.norbit.bettercommands.model.CommandAction;
-import pl.norbit.bettercommands.model.CommandType;
-import pl.norbit.bettercommands.model.ExecuteCommand;
+import pl.norbit.bettercommands.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ConfigUtils {
+    private ConfigUtils() {}
 
-    private ConfigUtils() {
-        throw new IllegalStateException("Utility class");
+    private static void parseRoute(
+            String route,
+            ConfigurationSection routeSec,
+            ExecuteCommand command
+    ) {
+
+        String[] parts = route.split(" ");
+
+        Map<String, CommandNode> currentMap = command.getSubCommands();
+        CommandNode currentNode = null;
+
+        for (String part : parts) {
+            boolean argument = part.startsWith("<") && part.endsWith(">");
+
+            String key = argument
+                    ? "__arg__" + part.substring(1, part.length() - 1)
+                    : part.toLowerCase();
+
+            CommandNode next = currentMap.get(key);
+
+            if (next == null) {
+                next = new CommandNode();
+
+                if (argument) {
+                    String argName = part.substring(1, part.length() - 1);
+
+                    next.setArgumentNode(true);
+                    next.setArgumentId(argName);
+
+                    if (argName.equalsIgnoreCase("player")
+                            || argName.equalsIgnoreCase("target")
+                            || argName.equalsIgnoreCase("player-name")) {
+
+                        next.setTabPlayers(true);
+                    }
+                }
+
+                currentMap.put(key, next);
+            }
+            currentNode = next;
+            currentMap = next.getSubCommands();
+        }
+
+        if (currentNode != null) {
+            ConfigurationSection actions = routeSec.getConfigurationSection("actions");
+
+            if (actions != null) {
+                currentNode.setActions(getActions(actions));
+            }
+        }
     }
 
     public static List<ExecuteCommand> getCommands(ConfigurationSection sec) {
-
         List<ExecuteCommand> commands = new ArrayList<>();
 
         sec.getKeys(false).forEach(name -> {
-            var cmdSec = sec.getConfigurationSection(name);
+            ConfigurationSection section = sec.getConfigurationSection(name);
 
-            if(cmdSec == null) return;
+            if(section == null) return;
 
-            var executeCommand = new ExecuteCommand(name);
+            ExecuteCommand executeCommand = new ExecuteCommand(name);
 
-            var completer = cmdSec.getBoolean("completer");
-            var perm = cmdSec.getString("perm");
-            var permMessage = cmdSec.getString("perm-message", Config.getDefaultPermissionMessage());
+            boolean completer = section.getBoolean("completer");
+            String perm = section.getString("perm");
+            String permMessage = section.getString("perm-message", Config.getDefaultPermissionMessage());
 
-            String cooldownMessage = cmdSec.getString("cooldown-message", Config.getDefaultCooldownMessage());
-            String argsMessage = cmdSec.getString("arg-message", Config.getDefaultArgsMessage());
-            int minArgs = cmdSec.getInt("min-args", 0);
+            String cooldownMessage = section.getString("cooldown-message", Config.getDefaultCooldownMessage());
+            String argsMessage = section.getString("arg-message", Config.getDefaultArgsMessage());
+            int cooldown = section.getInt("cooldown");
 
             executeCommand.setPerm(perm);
             executeCommand.setCooldownMessage(cooldownMessage);
             executeCommand.setArgsMessage(argsMessage);
-            executeCommand.setMinArgs(minArgs);
             executeCommand.setCompleter(completer);
             executeCommand.setPermMessage(permMessage);
+            executeCommand.setCooldown(cooldown);
 
-            var actions = cmdSec.getConfigurationSection("actions");
+            ConfigurationSection actionsSection = section.getConfigurationSection("actions");
 
-            //sub commands
-            ConfigurationSection configurationSection = cmdSec.getConfigurationSection("sub-commands");
+            //routes
+            ConfigurationSection routes = section.getConfigurationSection("routes");
 
-            if(configurationSection != null){
-                configurationSection.getKeys(false).forEach(subCommand -> {
-                    var subCommandSec = cmdSec.getConfigurationSection("sub-commands." + subCommand);
-                    if(subCommandSec == null){
-                        System.out.println("Sub command section is null");
-                        return;
-                    }
+            if(routes != null){
+                routes.getKeys(false).forEach(route -> {
+                    ConfigurationSection routeSec = routes.getConfigurationSection(route);
 
-                    var subActions = subCommandSec.getConfigurationSection("actions");
-                    if(subActions == null){
-                        System.out.println("Sub actions section is null");
-                        return;
-                    }
-                    executeCommand.addSubCommand(subCommand, getActions(subActions));
+                    if(routeSec == null) return;
+
+                    parseRoute(route, routeSec, executeCommand);
                 });
             }
 
             //default actions
-            if(actions != null){
-                executeCommand.setActions(getActions(actions));
+            if(actionsSection != null){
+                executeCommand.setActions(getActions(actionsSection));
             }
 
             commands.add(executeCommand);
@@ -72,30 +112,29 @@ public class ConfigUtils {
         return commands;
     }
 
-    private static List<CommandAction> getActions(ConfigurationSection sec){
-
+    private static List<CommandAction> getActions(ConfigurationSection section){
         List<CommandAction> actions = new ArrayList<>();
 
-        sec.getKeys(false).forEach(name -> {
-            var actionSec = sec.getConfigurationSection(name);
+        section.getKeys(false).forEach(name -> {
+            ConfigurationSection actionSection = section.getConfigurationSection(name);
 
-            if(actionSec == null) return;
+            if(actionSection == null) return;
 
-            var type = actionSec.getString("type");
+            String type = actionSection.getString("type");
 
             if(type == null) return;
 
-            CommandType commandType;
+            ArgType commandType;
             try {
-                commandType = CommandType.valueOf(type.toUpperCase());
+                commandType = ArgType.valueOf(type.toUpperCase());
             } catch (IllegalArgumentException e) {
                 return;
             }
 
-            var action = new CommandAction();
+            CommandAction action = new CommandAction();
 
             action.setType(commandType);
-            action.setAction(actionSec.getStringList("action"));
+            action.setAction(actionSection.getStringList("action"));
 
             actions.add(action);
         });

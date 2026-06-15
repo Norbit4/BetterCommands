@@ -22,16 +22,16 @@
 # 1.Reload config:
 #  To reload config use /bc reload, or /bettercommands reload command.
 
-#  [!] When you add new command or change name existing command, you need to restart server!
-#  Bukkit server don't support add new commands without restart server :c
+#  [!] When you add a new command or change name existing command, you need to restart the server!
+#  Paper server doesn't support add new commands without a restart server :c
 
 # 2.Actions:
 #   - replace:
 #      replace command to another command
-#      ex. /core -> /essentials, when player use /core reload it will replace to /essentials reload
+#      ex. /core -> /essentials, when a player uses /core reload it will replace to /essentials reload
 
 #   - text:
-#      send message to player who use command
+#      send a message to player who uses command
 
 #   - broadcast:
 #      broadcast message to all players on server
@@ -48,7 +48,7 @@
 #   - enable/disable tab completer for sub-commands
 
 # 4.Placeholders:
-#   - {PLAYER} - player name who use command
+#   - {PLAYER} - player name who uses command
 
 #  For other placeholders, use PlaceholderAPI plugin:
 #   - https://www.spigotmc.org/resources/placeholderapi.6245/
@@ -66,69 +66,77 @@ default-message:
   cooldown: '&cYou need to wait {0} seconds to use this command again!'
   arg: '&cYou need to provide more arguments!'
 
-blocked:
-  commands:
-    - 'pl'
-    - 'plugins'
-    - 'help'
-    - 'version'
-    - '?'
-  perm: 'bc.*' # <- permission to use blocked commands
-  message: '&cYou cannot use this command!' # <- default message when player don't have permission
-
 commands:
-  core: # <- command name (without /)
-    perm: 'core.admin' # <- when player don't have permission, it will send message default message
-    actions:
-      action-1:
-        type: 'replace' # <- replace, message, broadcast
-        action:
-          - 'essentials' # <- command to replace, when player use /core, it will replace to /essentials
-  info:
-    perm: 'info.admin' # <- permission to use this command
-    perm-message: '&cYou cannot use this command!' # <- message when player don't have permission
-    completer: true
-    #multi actions
-    actions:
-      action-1:
-        type: 'text'
-        action:
-          - '&#DBC7FFSended to all players!!' # <- to use HEX color, use &#HEXCODE
-      action-2:
-        type: 'broadcast'
-        action:
-          - '&aSended from {PLAYER}!'
-          - '&aHI ALL!'
+#  core: # <- command name (without /)
+#    perm: 'core.admin' # <- when a player doesn't have permission, it will send a message default message
+#    actions:
+#      action-1:
+#        type: 'replace' # <- replace, message, broadcast
+#        action:
+#          - 'essentials' # <- command to replace, when player use /core, it will replace to /essentials
+#  info:
+#    perm: 'info.admin' # <- permission to use this command
+#    perm-message: '&cYou cannot use this command!' # <- message when player doesn't have permission
+#    completer: true
+#    #multi actions
+#    actions:
+#      action-1:
+#        type: 'text'
+#        action:
+#          - '&#DBC7FFSended to all players!!' # <- to use HEX color, use &#HEXCODE
+#      action-2:
+#        type: 'broadcast'
+#        action:
+#          - '&aSended from {PLAYER}!'
+#          - '&aHI ALL!'
   diamonds:
-    cooldown: 5 # <- cooldown in seconds
-    min-args: 1
-    arg-message: '&cUsage: /diamonds <amount>'
+    cooldown: 5
+    completer: true
     actions:
       action-1:
         type: 'text'
         action:
-          - '&#DBC7FFDiamonds! {0}'
-      action-2:
-        type: 'server_command' # <- execute command as console
-        action:
-          - 'give {PLAYER} minecraft:diamond 1' # (without /)
-  sop:
-    completer: true # <- enable tab completer
+          - '&cUsage: /diamonds <amount>'
+    routes:
+      "<amount>":
+        actions:
+          action-1:
+            type: 'text'
+            action:
+              - '&#DBC7FFDiamonds! {0}'
+          action-2:
+            type: 'server_command'
+            action:
+              - 'give {PLAYER} minecraft:diamond {0}'
+  reward:
+    completer: true
     actions:
       action-1:
         type: 'text'
         action:
-          - '&aUsage: /sop <op/deop>'
-    sub-commands: # <- sub-commands
-      op: # <- sub-command name, use /sop op
+          - '&aUsage: /reward give <player> <item> <amount>'
+          - '&aUsage: /reward take <player> <item> <amount>'
+    routes:
+      "give <player> <item> <amount>":
         actions:
           action-1:
             type: 'server_command'
             action:
-              - 'op {PLAYER}'
-      deop: # <- sub-command name, use /sop deop
+              - 'give {0} {1} {2}'
+
+          action-2:
+            type: 'broadcast'
+            action:
+              - '&a{PLAYER} gave {2}x {1} to {0}'
+
+      "take <player> <item> <amount>":
         actions:
           action-1:
             type: 'server_command'
             action:
-              - 'deop {PLAYER}'
+              - 'clear {0} {1} {2}'
+
+          action-2:
+            type: 'broadcast'
+            action:
+              - '&c{PLAYER} removed {2}x {1} from {0}'

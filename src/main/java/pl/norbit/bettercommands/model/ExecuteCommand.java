@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.jetbrains.annotations.NotNull;
 import pl.norbit.bettercommands.BetterCommands;
+import pl.norbit.bettercommands.cooldown.CooldownService;
 import pl.norbit.bettercommands.settings.Config;
 import pl.norbit.bettercommands.placeholders.PlaceholderService;
 import pl.norbit.bettercommands.utils.ChatUtils;
@@ -17,22 +18,21 @@ import java.util.*;
 @Getter
 @Setter
 public class ExecuteCommand extends BukkitCommand {
-
     private static Server server = BetterCommands.getInstance().getServer();
     private static final HashMap<String, ExecuteCommand> COMMANDS = new HashMap<>();
+    private static final CooldownService cooldownService = new CooldownService();
 
     private String cmdName;
     private List<CommandAction> actions;
     private String perm;
     private String permMessage;
     private String cooldownMessage;
+    private int cooldown;
 
     private String argsMessage;
-    private int minArgs;
 
     private boolean completer;
-
-    private Map<String, List<CommandAction>> subCommands;
+    private Map<String, CommandNode> subCommands;
 
     public ExecuteCommand(@NotNull String name) {
         super(name);
@@ -41,48 +41,136 @@ public class ExecuteCommand extends BukkitCommand {
         this.subCommands = new HashMap<>();
     }
 
-    public void addSubCommand(String subCommand, List<CommandAction> actions){
-        this.subCommands.put(subCommand, actions);
+    private CommandNode findArgumentNode(Map<String, CommandNode> map) {
+        return map.values()
+                .stream()
+                .filter(CommandNode::isArgumentNode)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if(!PermissionUtils.hasPermission(perm, sender)){
             if(permMessage != null && !permMessage.isEmpty()) MessageUtils.toSender(sender, permMessage);
-            else MessageUtils.toSender(sender, Config.PERM_MESSAGE);
+            else MessageUtils.toSender(sender, Config.getDefaultPermissionMessage());
             return true;
         }
 
-        if(args.length < minArgs){
-            MessageUtils.toSender(sender, argsMessage);
+        if (cooldown > 0 && cooldownService.isOnCooldown(sender, cmdName)) {
+            long remaining =
+                    cooldownService.getRemainingSeconds(sender, cmdName);
+
+            MessageUtils.toSender(
+                    sender,
+                    cooldownMessage.replace("{time}", String.valueOf(remaining))
+            );
+
             return true;
         }
 
-        //execute default actions
+        //execute default actions when no args
         if(args.length < 1){
             actions.forEach(action -> executeAction(action, sender, args));
+            applyCooldown(sender);
+            return true;
+        }
+        CommandNode currentNode = null;
+        Map<String, CommandNode> current = subCommands;
+
+        for(String arg : args){
+            CommandNode next = current.get(arg.toLowerCase());
+
+            if(next == null){
+                next = findArgumentNode(current);
+
+                if(next == null){
+                    break;
+                }
+            }
+
+            currentNode = next;
+            current = next.getSubCommands();
+        }
+
+        if(currentNode != null &&
+                !currentNode.getActions().isEmpty()){
+
+            currentNode.getActions()
+                    .forEach(action ->
+                            executeAction(action, sender, args));
+            applyCooldown(sender);
             return true;
         }
 
-        String arg = args[0];
-        //execute sub commands
-        List<CommandAction> commandActions = subCommands.get(arg);
-        if(commandActions == null){
-            actions.forEach(action -> executeAction(action, sender, args));
-            return true;
-        }
+        //fallback to root actions
+        actions.forEach(action -> executeAction(action, sender, args));
 
-        commandActions.forEach(action -> executeAction(action, sender, args));
+        applyCooldown(sender);
         return true;
     }
 
     @Override
-    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+    public @NotNull List<String> tabComplete(
+            @NotNull CommandSender sender,
+            @NotNull String alias,
+            @NotNull String[] args) {
+
         if(!completer){
             return Collections.emptyList();
         }
 
-        return new ArrayList<>(subCommands.keySet());
+        Map<String, CommandNode> current = subCommands;
+
+        for(int i = 0; i < args.length - 1; i++){
+            CommandNode next =
+                    current.get(args[i].toLowerCase());
+
+            if(next == null){
+                next = findArgumentNode(current);
+
+                if(next == null){
+                    return Collections.emptyList();
+                }
+            }
+
+            current = next.getSubCommands();
+        }
+
+        String lastArg =
+                args.length == 0
+                        ? ""
+                        : args[args.length - 1].toLowerCase();
+
+        List<String> suggestions = new ArrayList<>();
+
+        current.forEach((key, node) -> {
+            if(node.isArgumentNode()){
+                if(node.isTabPlayers()){
+                    server.getOnlinePlayers()
+                            .forEach(player -> {
+                                if(player.getName()
+                                        .toLowerCase()
+                                        .startsWith(lastArg)) {
+
+                                    suggestions.add(player.getName());
+                                }
+                            });
+                }
+            }else{
+                if(key.startsWith(lastArg)){
+                    suggestions.add(key);
+                }
+            }
+        });
+
+        return suggestions;
+    }
+
+    private void applyCooldown(CommandSender sender) {
+        if (cooldown > 0) {
+            cooldownService.setCooldown(sender, cmdName, cooldown);
+        }
     }
 
     public void register(){
@@ -111,8 +199,10 @@ public class ExecuteCommand extends BukkitCommand {
             executeCommand.setCompleter(cmd.isCompleter());
             executeCommand.setPermMessage(cmd.getPermMessage());
             executeCommand.setSubCommands(cmd.getSubCommands());
-
+            executeCommand.setArgsMessage(cmd.getArgsMessage());
+            executeCommand.setCooldownMessage(cmd.getCooldownMessage());
             executeCommand.setActions(cmd.getActions());
+            executeCommand.setCooldown(cmd.getCooldown());
         }
         MessageUtils.toSender(sender, "");
         if(reloadWarn) {
@@ -126,30 +216,30 @@ public class ExecuteCommand extends BukkitCommand {
     }
 
     private void executeAction(CommandAction cmdAction, CommandSender sender, @NotNull String[] args){
-        List<String> actions = cmdAction.getAction();
+        List<String> cmdActions = cmdAction.getAction();
 
-        if(actions.isEmpty()) return;
+        if(cmdActions.isEmpty()) return;
 
         switch (cmdAction.getType()) {
             case REPLACE -> {
-                var usageCommand = new StringBuilder(actions.get(0));
+                var usageCommand = new StringBuilder(cmdActions.get(0));
 
                 Arrays.stream(args).forEach(arg -> usageCommand.append(" ").append(arg));
 
                 server.dispatchCommand(sender, usageCommand.toString());
             }
-            case TEXT -> actions.forEach(m -> MessageUtils.toSender(sender, m, args));
+            case TEXT -> cmdActions.forEach(m -> MessageUtils.toSender(sender, m, args));
             case PLAYER_COMMAND ->
-                actions.forEach(c -> {
+                cmdActions.forEach(c -> {
                     String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
                     server.dispatchCommand(sender, command);
                 });
             case SERVER_COMMAND ->
-                actions.forEach(c -> {
+                cmdActions.forEach(c -> {
                     String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
                     server.dispatchCommand(server.getConsoleSender(), command);
                 });
-            case BROADCAST -> actions.forEach(m -> MessageUtils.toAll(sender, m, args));
+            case BROADCAST -> cmdActions.forEach(m -> MessageUtils.toAll(sender, m, args));
         }
     }
 }

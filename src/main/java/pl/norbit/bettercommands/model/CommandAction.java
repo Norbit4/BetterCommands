@@ -6,7 +6,6 @@ import java.util.List;
 
 @Data
 public class CommandAction {
-
-    private CommandType type;
+    private ArgType type;
     private List<String> action;
 }

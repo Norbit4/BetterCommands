@@ -6,9 +6,7 @@ import pl.norbit.bettercommands.placeholders.PlaceholderService;
 
 public class MessageUtils {
 
-    private MessageUtils() {
-        throw new IllegalStateException("Utility class");
-    }
+    private MessageUtils() {}
 
     public static void toSender(CommandSender sender, String message, String... args) {
         sender.sendMessage(ChatUtils.format(PlaceholderService.replace(message, sender), args));

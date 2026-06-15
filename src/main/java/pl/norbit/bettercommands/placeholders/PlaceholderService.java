@@ -5,19 +5,17 @@ import org.bukkit.entity.Player;
 import pl.norbit.bettercommands.settings.Config;
 
 public class PlaceholderService {
-    private PlaceholderService() {
-        throw new IllegalStateException("Utility class");
-    }
+    private PlaceholderService() {}
 
     public static String replace(String message, CommandSender commandSender) {
         if(!(commandSender instanceof Player p)){
             return PlaceholderUtil.format(message, null);
         }
 
-        if(Config.PAPI_ENABLE){
+        if(Config.isPapiEnable()){
             message = PlaceholderUtil.format(message, p);
         }
 
-        return message.replace("{PLAYER}", p.getName());
+        return message.replace("{player}", p.getName());
     }
 }
