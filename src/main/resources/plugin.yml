@@ -3,7 +3,7 @@ version: '1.0.0'
 main: pl.norbit.bettercommands.BetterCommands
 api-version: '1.16'
 author: Norbit4
-website: 'https://n0rbit.pl'
+website: 'https://github.com/Norbit4'
 softdepend:
   - PlaceholderAPI
 commands:
