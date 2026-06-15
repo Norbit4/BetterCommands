@@ -35,8 +35,7 @@ public final class BetterCommands extends JavaPlugin {
         log.info("Website: https://github.com/Norbit4");
         log.info("");
     }
-
-
+    
     private void checkPapi() {
         PluginManager pm = getServer().getPluginManager();
         Plugin papiPlugin = pm.getPlugin("PlaceholderAPI");
