@@ -77,16 +77,14 @@ public class ConfigUtils {
             ExecuteCommand executeCommand = new ExecuteCommand(name);
 
             boolean completer = section.getBoolean("completer");
-            String perm = section.getString("perm");
-            String permMessage = section.getString("perm-message", Config.getDefaultPermissionMessage());
+            String perm = section.getString("permission");
+            String permMessage = section.getString("permission-message", Config.getDefaultPermissionMessage());
 
             String cooldownMessage = section.getString("cooldown-message", Config.getDefaultCooldownMessage());
-            String argsMessage = section.getString("arg-message", Config.getDefaultArgsMessage());
             int cooldown = section.getInt("cooldown");
 
             executeCommand.setPerm(perm);
             executeCommand.setCooldownMessage(cooldownMessage);
-            executeCommand.setArgsMessage(argsMessage);
             executeCommand.setCompleter(completer);
             executeCommand.setPermMessage(permMessage);
             executeCommand.setCooldown(cooldown);

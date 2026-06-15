@@ -18,8 +18,6 @@ public class Config {
     private static String defaultPermissionMessage;
     @Getter
     private static String defaultCooldownMessage;
-    @Getter
-    private static String defaultArgsMessage;
 
     private Config() {}
 
@@ -37,7 +35,6 @@ public class Config {
             return;
         }
 
-        defaultArgsMessage = config.getString("default-message.arg");
         defaultCooldownMessage = config.getString("default-message.cooldown");
         defaultPermissionMessage = config.getString("default-message.permission");
 
