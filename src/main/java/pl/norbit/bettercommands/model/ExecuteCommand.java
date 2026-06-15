@@ -245,6 +245,19 @@ public class ExecuteCommand extends BukkitCommand {
 
         if(cmdActions.isEmpty()) return;
 
+        int delay = cmdAction.getDelay();
+
+        if(delay == 0){
+            execute(cmdAction, sender, args);
+        }else {
+            BetterCommands instance = BetterCommands.getInstance();
+            server.getScheduler()
+                    .runTaskLater(instance, () -> execute(cmdAction, sender, args), delay);
+        }
+    }
+
+    private void execute(CommandAction cmdAction, CommandSender sender, @NotNull String[] args){
+        List<String> cmdActions = cmdAction.getAction();
         switch (cmdAction.getType()) {
             case REPLACE -> {
                 var usageCommand = new StringBuilder(cmdActions.get(0));
@@ -255,15 +268,15 @@ public class ExecuteCommand extends BukkitCommand {
             }
             case TEXT -> cmdActions.forEach(m -> MessageUtils.toSender(sender, m, args));
             case PLAYER_COMMAND ->
-                cmdActions.forEach(c -> {
-                    String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
-                    server.dispatchCommand(sender, command);
-                });
+                    cmdActions.forEach(c -> {
+                        String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
+                        server.dispatchCommand(sender, command);
+                    });
             case SERVER_COMMAND ->
-                cmdActions.forEach(c -> {
-                    String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
-                    server.dispatchCommand(server.getConsoleSender(), command);
-                });
+                    cmdActions.forEach(c -> {
+                        String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
+                        server.dispatchCommand(server.getConsoleSender(), command);
+                    });
             case BROADCAST -> cmdActions.forEach(m -> MessageUtils.toAll(sender, m, args));
         }
     }

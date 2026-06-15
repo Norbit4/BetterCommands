@@ -123,6 +123,7 @@ public class ConfigUtils {
             if(actionSection == null) return;
 
             String type = actionSection.getString("type");
+            int delay = actionSection.getInt("delay");
 
             if(type == null) return;
 
@@ -136,6 +137,7 @@ public class ConfigUtils {
             CommandAction action = new CommandAction();
 
             action.setType(commandType);
+            action.setDelay(delay);
             action.setAction(actionSection.getStringList("action"));
 
             actions.add(action);

@@ -129,6 +129,7 @@ commands:
               - '&#DBC7FFSended to all players!!' # <- to use HEX color, use &#HEXCODE
           action-2:
             type: 'broadcast'
+            delay: 30 # <- action delay in ticks
             action:
               - '&aSended from {player}!'
               - '&a{0}'
